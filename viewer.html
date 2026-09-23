@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3D Member Viewer</title>
+
+<!-- Google <model-viewer> web component: pure browser, no app install,
+     supports AR "view in your space" on iOS (Quick Look) and Android
+     (Scene Viewer) automatically, with graceful fallback to plain 3D. -->
+<script type="module"
+  src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+</script>
+
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #111; color: #eee;
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 10px 14px;
+    background: rgba(0,0,0,0.55);
+    font-size: 15px;
+    z-index: 2;
+  }
+  model-viewer {
+    width: 100%; height: 100%;
+    --poster-color: #111;
+  }
+  #error {
+    display: none;
+    position: fixed; inset: 0;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 24px;
+    font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+  <div id="topbar">Member: <span id="member-label">—</span></div>
+
+  <model-viewer id="mv"
+      camera-controls
+      touch-action="pan-y"
+      auto-rotate
+      shadow-intensity="1"
+      exposure="1"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      alt="3D model of structural member">
+  </model-viewer>
+
+  <div id="error">
+    <div>
+      Could not load a 3D model for this item.<br>
+      Check the QR code / link and try again.
+    </div>
+  </div>
+
+<script>
+  // Reads ?item=<member_number> from the URL and loads
+  // /models/<member_number>.glb
+  // Change MODEL_BASE_URL below if you host models elsewhere
+  // (e.g. a CDN or cloud storage bucket).
+  const MODEL_BASE_URL = "models/"; // trailing slash required
+
+  const params = new URLSearchParams(window.location.search);
+  const item = params.get("item");
+  const mv = document.getElementById("mv");
+  const label = document.getElementById("member-label");
+  const errorBox = document.getElementById("error");
+
+  if (!item) {
+    errorBox.style.display = "flex";
+    mv.style.display = "none";
+  } else {
+    label.textContent = item;
+    const url = MODEL_BASE_URL + encodeURIComponent(item) + ".glb";
+    mv.src = url;
+
+    mv.addEventListener("error", () => {
+      errorBox.style.display = "flex";
+      mv.style.display = "none";
+    });
+  }
+</script>
+
+</body>
+</html>
